@@ -23,5 +23,5 @@
         -p, --pack          with package
         -u, --unique        use unique compile caching
         -P, --Path          指定文件构建
-        -a --all            是否构建所有文件
+        -a, --all            是否构建所有文件
         --verbose           enable verbose output
