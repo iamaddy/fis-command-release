@@ -1,7 +1,7 @@
 # fis-command-release
 ## 优化说明
-    针对FIS的全局构建进行了一次优化，可以指定文件或者目录构建项目，减少构建时间。
-    `fis release -d ../ -p -o -m -P /android_htdocs/gift/gift.shtml`
+针对FIS的全局构建进行了一次优化，可以指定文件或者目录构建项目，减少构建时间。
+```fis release -d ../ -p -o -m -P /android_htdocs/gift/gift.shtml```
     gift.shtml所依赖的静态资源文件都会被构建，其他文件则不会受影响。
 ## Usage
 
