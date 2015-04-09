@@ -29,6 +29,7 @@ exports.register = function(commander){
             })
             .on('add', listener)
             .on('change', function(path) {
+                // 监听文件的时候 只构建变化的文件
                 if(safePathReg.test(path)){
                     clearTimeout(timer);
                     timer = setTimeout(function(){
@@ -79,13 +80,7 @@ exports.register = function(commander){
         LRTimer = setTimeout(reload, 200);
     };
 
-    function deployIosOrAndroid (isIos) {
-        var type = isIos ? 'ios_htdocs' : 'android_htdocs';
-        var fun = fis.config.get('project.roadmap.path');
-        fun && fun(type);
-    }
-
-    //从这里应该指定一个路径 addy 很早以前
+    //从这里指定一个路径构建
     function release(opt, path){
         var flag, cost, start = Date.now();
         process.stdout.write('\n Ω '.green.bold);
@@ -119,21 +114,22 @@ exports.register = function(commander){
         };
         
         try {
-
-            //release 开始构建 回调， 从这里应该指定一个路径 addy
+            // release 开始构建 回调， 从这里指定一个路径
             // add path params  2015-1-18
             fis.release(opt, function(ret){
                 process.stdout.write(
                     (opt.verbose ? '' : ' ') +
                     (Date.now() - start + 'ms').bold.green + '\n'
                 );
+                fis.util.map(ret.pkg, function(subpath, file){
+                    collection[subpath] = file;
+                });
                 for(var item in collection){
                     if(collection.hasOwnProperty(item)){
                         if(opt.unique){
                             time(fis.compile.clean);
                         }
                         deploy(opt, collection, path);
-                        deploy(opt, ret.pkg, path, 1);
                         collection = {};
                         return;
                     }
@@ -150,7 +146,7 @@ exports.register = function(commander){
             }
         }
     }
-    
+    // --ios 项目扩展自用，不妨碍项目
     commander
         .option('-d, --dest <names>', 'release output destination', String, 'preview')
         .option('-m, --md5 [level]', 'md5 release option', Number)
@@ -169,7 +165,7 @@ exports.register = function(commander){
         .option('-P, --path <path>', 'release destination file', String, false)
         .option('-lc, --lc', 'js css prefix', Boolean, false)
         .option('--ios', 'which path output', Boolean, false)
-        .option('-a --all', 'which path output', Boolean, false)
+        .option('-a --all', 'build all file', Boolean, false)
         .action(function(){
             
             var options = arguments[arguments.length - 1];
@@ -229,7 +225,9 @@ exports.register = function(commander){
                     cache.save();
                 }
                 require(conf);
-                deployIosOrAndroid(options.ios);
+                // 通过命令控制编译的目录
+                var cb = fis.config.get('project.roadmap.path');
+                cb && cb(options.ios);
             } else {
                 fis.log.warning('missing config file [' + filename + ']');
             }
